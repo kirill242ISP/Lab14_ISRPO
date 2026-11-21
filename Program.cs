@@ -16,45 +16,31 @@ guild.AddHero(artem);
 guild.AddHero(alexander);
 guild.AddHero(sergey);
 
-List<Hero> members = guild.GetMembers();
+Console.WriteLine($">>> {guild.Name}: участников {guild.MemberCount} <<<");
+Console.WriteLine();
 
-Console.WriteLine($">>> {guild.Name}: перекличка <<<");
-Console.WriteLine($"Участников: {guild.MemberCount}");
+QuestBoard board = new QuestBoard(guild);
 
-if (members.Count > 0)
+Quest floatQuest = new Quest(101, "Вернуть поплавок", 100, 30);
+Console.WriteLine($"Поручение добавлено: {board.AddQuest(floatQuest)}");
+Console.WriteLine($">>> №{floatQuest.Id}: {floatQuest.Title} <<<");
+
+Console.WriteLine($"Назначение Сергея: {board.TryAssign(101, " сЕрГеЙ ")}");
+Hero? assigned = floatQuest.AssignedHero;
+if (assigned != null)
 {
-    Console.WriteLine($"Первый: {members[0].Name}");
-    Console.WriteLine($"Последний: {members[members.Count - 1].Name}");
+    Console.WriteLine($"Исполнитель: {assigned.Name}");
 }
+Console.WriteLine($"Опыт после назначения: {sergey.Experience}");
+
+Console.WriteLine($"Завершение: {board.TryComplete(101)}");
+Console.WriteLine($"Опыт после завершения: {sergey.Experience}");
+Console.WriteLine($"Повторное завершение: {board.TryComplete(101)}");
+Console.WriteLine($"Опыт после повтора: {sergey.Experience}");
 
 Console.WriteLine();
-foreach (Hero hero in members)
-{
-    Console.WriteLine(hero.GetInfo());
-    Console.WriteLine();
-}
-
-Hero? found = guild.FindHeroByName(" аРтЁм ");
-if (found != null)
-{
-    Console.WriteLine($"Найден по запросу « аРтЁм »: {found.Name}");
-}
-else
-{
-    Console.WriteLine("По запросу « аРтЁм » никого нет.");
-}
-
-Console.WriteLine($"Повтор Александра принят: {guild.AddHero(alexander)}");
-Console.WriteLine($"Удалён отсутствующий: {guild.RemoveHero("Борис")}");
-Console.WriteLine($"Участников после проверок: {guild.MemberCount}");
-
-Console.WriteLine($"Могут нести тяжёлые ящики (здоровье от 120): {guild.CountHealthy(120)}");
-
-Hero? strongest = guild.FindStrongest();
-if (strongest != null)
-{
-    Console.WriteLine($"Самый здоровый: {strongest.Name} ({strongest.Health})");
-}
+Console.WriteLine(floatQuest.GetInfo());
+Console.WriteLine(sergey.GetInfo());
 
 Console.WriteLine();
 Warehouse warehouse = new Warehouse("Оружейный склад гильдии");
@@ -64,34 +50,26 @@ Product sword = new Product("Стальной меч", 1200, 2);
 Product potion = new Product("Зелье лечения", 150, 15);
 Product bow = new Product("Охотничий лук", 950, 1);
 
-Console.WriteLine($">>> {warehouse.Name} <<<");
-Console.WriteLine($"Приём «Железный щит»: {warehouse.AddProduct(shield)}");
-Console.WriteLine($"Приём «Стальной меч»: {warehouse.AddProduct(sword)}");
-Console.WriteLine($"Приём «Зелье лечения»: {warehouse.AddProduct(potion)}");
-Console.WriteLine($"Приём «Охотничий лук»: {warehouse.AddProduct(bow)}");
-Console.WriteLine($"Повтор «СТАЛЬНОЙ МЕЧ» принят: {warehouse.AddProduct(new Product("  СТАЛЬНОЙ МЕЧ ", 1200, 5))}");
-Console.WriteLine($"Позиций на складе: {warehouse.ProductCount}");
+warehouse.AddProduct(shield);
+warehouse.AddProduct(sword);
+warehouse.AddProduct(potion);
+warehouse.AddProduct(bow);
 
-Product? foundProduct = warehouse.FindProductByName("  зелье лечения ");
-if (foundProduct != null)
-{
-    Console.WriteLine($"Найден товар: {foundProduct.Name} | Цена: {foundProduct.Price} | Остаток: {foundProduct.StockQuantity} шт.");
-}
-else
-{
-    Console.WriteLine("Товар не найден.");
-}
+Console.WriteLine($">>> {warehouse.Name}: работа с заказами <<<");
 
-Product? missingProduct = warehouse.FindProductByName("Волшебный посох");
-if (missingProduct != null)
-{
-    Console.WriteLine($"Найден товар: {missingProduct.Name}");
-}
-else
-{
-    Console.WriteLine("Запрос «Волшебный посох»: товар на складе отсутствует.");
-}
+Order failedOrder = new Order(501, 5);
+Console.WriteLine($"Заказ №501 на 5 мечей (в наличии 2): {failedOrder.TryStart(sword)}");
 
-Console.WriteLine($"Товаров с критическим остатком (< 3 шт.): {warehouse.CountLowStock(3)}");
-Console.WriteLine($"Удалён «охотничий лук»: {warehouse.RemoveProduct("охотничий лук")}");
-Console.WriteLine($"Позиций на складе после удаления: {warehouse.ProductCount}");
+Order validOrder = new Order(502, 4);
+Console.WriteLine($"Заказ №502 на 4 зелья (старт): {validOrder.TryStart(potion)}");
+Console.WriteLine($"Остаток зелий до отгрузки: {potion.StockQuantity} шт.");
+
+Console.WriteLine($"Отгрузка заказа №502: {validOrder.TryFinish()}");
+Console.WriteLine($"Повторная отгрузка заказа №502: {validOrder.TryFinish()}");
+Console.WriteLine(validOrder.GetInfo());
+
+Product? checkPotion = warehouse.FindProductByName("зелье лечения");
+if (checkPotion != null)
+{
+    Console.WriteLine($"Проверка по складу — {checkPotion.Name}: остаток {checkPotion.StockQuantity} шт.");
+}
